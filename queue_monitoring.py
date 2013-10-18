@@ -23,7 +23,7 @@ egress_queue_byte_re = re.compile('UC_PERQ_BYTE\((\d{1})\)\.(.+?)\t:.*')
 
 def send_queue_info(port,queue,object,action,counter):
     #statsd gauge
-    msg = (HOSTNAME,'.',port,'-queue',queue,'-',action,'-',object,':',counter,'|g')
+    msg = (HOSTNAME,'.',port,'-queue',queue,'-',action,'-',object,':',counter,'|c')
     msg = join(msg,sep='')
     statsd_socket.sendto(msg,STATSD_SERVER)
 
@@ -35,12 +35,12 @@ def main():
             if egress_queue_pkt_re.match(line):
                 int_name = egress_queue_pkt_re.findall(line)[0][1]
                 queue_num = egress_queue_pkt_re.findall(line)[0][0]
-                value = join(line.strip().split()[2].strip('+').split(','),sep='')
+                value = join(line.strip().split()[3].strip('+').split(','),sep='')
                 send_queue_info(int_name,queue_num,'pkt','pass',value)
             if egress_queue_byte_re.match(line):
                 int_name = egress_queue_byte_re.findall(line)[0][1]
                 queue_num = egress_queue_byte_re.findall(line)[0][0]
-                value = join(line.strip().split()[2].strip('+').split(','),sep='')
+                value = join(line.strip().split()[3].strip('+').split(','),sep='')
                 send_queue_info(int_name,queue_num,'byte','pass',value)
         time.sleep(9)
 
